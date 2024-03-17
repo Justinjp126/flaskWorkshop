@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Assignment Assigner</title>
+{% endblock %}
+
+{% block body %}
+
+<div class="content">
+    <h1>Update Student</h1>
+
+    <form action="/update/student/{{student.id}}" method="POST">
+        <input type="hidden" name="action" value="addStudent">
+        <label for="studentName">Name: </label>
+        <input type="text" label name="studentName" id="studentName">
+        <label for="studentName">Email: </label>
+        <input type="text" label name="studentEmail" id="studentEmail">
+        <label for="studentName">Major: </label>
+        <input type="text" label name="studentMajor" id="studentMajor">
+        <label for="studentYear">Year: </label>
+        <select name="studentYear" id="studentYear">
+            <option value="freshman">Freshman</option>
+            <option value="sophomore">Sophomore</option>
+            <option value="junior">Junior</option>
+            <option value="senior">Senior</option>
+        </select>
+        <input type="submit" value="Update">
+    </form>
+</div>
+
+{% endblock %}

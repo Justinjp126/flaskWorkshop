@@ -1,40 +1,94 @@
 {% extends 'base.html' %}
 
 {% block head %}
-<title>Task Master</title>
+<title>Assignment Assigner</title>
 {% endblock %}
 
 {% block body %}
 
 <div class="content">
-    <h1>Task Master</h1>
-
-    {% if tasks|length < 1 %}
-    <h4>No current tasks</h4>
+    <h1>Assignment Assigner</h1>
+    <h2>Professors</h2>
+    {% if professors|length < 1 %} 
+    <h4>No professors in database</h4>
     
     {% else %}
-    <table> 
+    <table>
         <tr>
-            <th>Task</th>
-            <th>Added</th>
+            <th>Professor</th>
+            <th>Email</th>
+            <th>Department</th>
             <th>Actions</th>
         </tr>
-        {% for task in tasks %}
+        {% for professor in professors %}
         <tr>
-            <td>{{ task.content }}</td>
-            <td>{{ task.date_created.date() }}</td>
+            <td>{{ professor.name }}</td>
+            <td>{{ professor.email }}</td>
+            <td>{{ professor.department }}</td>
             <td>
-                <a href="/delete/{{task.id}}">Delete</a>
+                <a href="/delete/professor/{{professor.id}}">Delete</a>
                 <br>
-                <a href="/update/{{task.id}}">Update</a>
+                <a href="/update/professor/{{professor.id}}">Update</a>
             </td>
         </tr>
         {% endfor %}
     </table>
     {% endif %}
     <form action="/" method="POST">
-        <input type="text" name="content" id="content">
-        <input type="submit" value="Add task">
+        <input type="hidden" name="action" value="addProfessor">
+        <label for="professorName">Name: </label>
+        <input type="text" label name="professorName" id="professorName">
+        <label for="professorEmail">Email: </label>
+        <input type="text" label name="professorEmail" id="professorEmail">
+        <label for="professorDepartment">Department: </label>
+        <input type="text" label name="professorDepartment" id="professorDepartment">
+        <input type="submit" value="Add Professor">
+    </form>
+
+    <h2>Students</h2>
+    {% if students|length < 1 %}
+    <h4>No students in database</h4>
+    
+    {% else %}
+    <table>
+        <tr>
+            <th>Student</th>
+            <th>Email</th>
+            <th>Major</th>
+            <th>Year</th>
+            <th>Actions</th>
+        </tr>
+        {% for student in students %}
+        <tr>
+            <td>{{ student.name }}</td>
+            <td>{{ student.email }}</td>
+            <td>{{ student.major }}</td>
+            <td style="text-transform: capitalize;">{{ student.year }}</td>
+            <td>
+                <a href="/delete/student/{{student.id}}">Delete</a>
+                <br>
+                <a href="/update/student/{{student.id}}">Update</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    <form action="/" method="POST">
+        <input type="hidden" name="action" value="addStudent">
+        <label for="studentName">Name: </label>
+        <input type="text" label name="studentName" id="studentName">
+        <label for="studentName">Email: </label>
+        <input type="text" label name="studentEmail" id="studentEmail">
+        <label for="studentName">Major: </label>
+        <input type="text" label name="studentMajor" id="studentMajor">
+        <label for="studentYear">Year: </label>
+        <select name="studentYear" id="studentYear">
+            <option value="freshman">Freshman</option>
+            <option value="sophomore">Sophomore</option>
+            <option value="junior">Junior</option>
+            <option value="senior">Senior</option>
+        </select>
+        <input type="submit" value="Add Student">
     </form>
 </div>
 
