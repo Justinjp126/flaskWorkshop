@@ -22,7 +22,3 @@ $ python app.py
 from project import app, db
 app.app_context().push()
 db.create_all()
-
-## Contributing
-
-Since this is a repository for a tutorial, the code should remain the same as the code that was shown in the tutorial. Any pull requests that don't address security flaws or fixes for language updates will be automatically closed. Style changes, adding libraries, etc are not valid changes for submitting a pull request.
