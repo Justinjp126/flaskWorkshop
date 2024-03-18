@@ -8,6 +8,30 @@
 
 <div class="content">
     <h1>Assignment Assigner</h1>
+    <h2>Assignments</h2>
+    <h4>No Assignments in database</h4>
+    <form action="/" method="POST">
+        <input type="hidden" name="action" value="addAssignment">
+        <label for="assignmentName">Name: </label>
+        <input type="text" label name="assignmentName" id="assignmentName">
+        <label for="assignmentDescription">Description: </label>
+        <input type="text" label name="assignmentDescription" id="assignmentDescription">
+        <label for="assignmentDueDate">Due Date: </label>
+        <input type="date" label name="assignmentDueDate" id="assignmentDueDate">
+        <label for="assignmentProfessor">Assigned By: </label>
+        <select name="assignmentProfessor" id="assignmentProfessor">
+            {% for professor in professors %}
+            <option value="{{professor.name}}">{{professor.name}}</option>
+            {% endfor %}
+        </select>
+        <label for="assignmentStudent">Assigned To: </label>
+        <select name="assignmentStudent" id="assignmentStudent">
+            {% for student in students %}
+            <option value="{{student.name}}">{{student.name}}</option>
+            {% endfor %}
+        </select>
+        <input type="submit" value="Add Assignment">
+    </form>
     <h2>Professors</h2>
     {% if professors|length < 1 %} 
     <h4>No professors in database</h4>
