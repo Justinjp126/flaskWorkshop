@@ -114,10 +114,43 @@ def index():  # define route
                 return redirect("/")
             except:
                 return "Error adding professor"
+        elif action == "addAssignment":
+            assignment_name = request.form['assignmentName']
+            assignment_description = request.form['assignmentDescription']
+            assignment_due_date_str = request.form["assignmentDueDate"]
+            assignment_professor_id = request.form['assignmentProfessorId']
+            assignment_student_id= request.form["assignmentStudentId"]
+
+            assignment_due_date = datetime.strptime(assignment_due_date_str, '%Y-%m-%d')
+
+            # Create the assignment
+            new_assignment = Assignment(
+                name=assignment_name,
+                description=assignment_description,
+                due_date=assignment_due_date,
+                professor_id=assignment_professor_id,
+                student_id=assignment_student_id
+            )
+
+            try:
+                db.session.add(new_assignment)
+                db.session.commit()
+
+                # new_student_assignment = Student_Assignments (
+                #     student_id=assignment_student_id,
+                #     assignment_id=new_assignment.id,
+                #     status="Pending"
+                # )
+                # db.session.add(new_student_assignment)
+                # db.session.commit()
+                return redirect('/')
+            except Exception as e:
+                return "Error adding assignment" + str(e)
     else:
         students = Student.query.order_by(Student.name).all()
         professors = Professor.query.order_by(Professor.name).all()
-        return render_template('index.html', students=students, professors=professors)
+        assignments = Assignment.query.order_by(Assignment.due_date).all()
+        return render_template('index.html', assignments=assignments, professors=professors, students=students)
 
 @app.route('/delete/student/<int:id>')
 def deleteStudent(id):

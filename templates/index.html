@@ -9,7 +9,31 @@
 <div class="content">
     <h1>Assignment Assigner</h1>
     <h2>Assignments</h2>
+
+    {% if professors|length < 1 %}
     <h4>No Assignments in database</h4>
+    
+    {% else %}  
+    <table>
+        <tr>
+            <th>Assignment</th>
+            <th>Description</th>
+            <th>Due Date</th>
+            <th>Professor</th>
+            <th>Student</th>
+            <th>Actions</th>
+        </tr>
+        {% for assignment in assignments %}
+        <tr>
+            <td>{{ assignment.name }}</td>
+            <td>{{ assignment.description }}</td>
+            <td>{{ assignment.due_date }}</td>
+            <td>{{ assignment.professor.name }}</td>
+            <td>{{ assignment.student.name }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
     <form action="/" method="POST">
         <input type="hidden" name="action" value="addAssignment">
         <label for="assignmentName">Name: </label>
@@ -18,16 +42,16 @@
         <input type="text" label name="assignmentDescription" id="assignmentDescription">
         <label for="assignmentDueDate">Due Date: </label>
         <input type="date" label name="assignmentDueDate" id="assignmentDueDate">
-        <label for="assignmentProfessor">Assigned By: </label>
-        <select name="assignmentProfessor" id="assignmentProfessor">
+        <label for="assignmentProfessorId">Assigned By: </label>
+        <select name="assignmentProfessorId" id="assignmentProfessorId">
             {% for professor in professors %}
-            <option value="{{professor.name}}">{{professor.name}}</option>
+            <option value="{{professor.id}}">{{professor.name}}</option>
             {% endfor %}
         </select>
-        <label for="assignmentStudent">Assigned To: </label>
-        <select name="assignmentStudent" id="assignmentStudent">
+        <label for="assignmentStudentId">Assigned To: </label>
+        <select name="assignmentStudentId" id="assignmentStudentId">
             {% for student in students %}
-            <option value="{{student.name}}">{{student.name}}</option>
+            <option value="{{student.id}}">{{student.name}}</option>
             {% endfor %}
         </select>
         <input type="submit" value="Add Assignment">
