@@ -47,7 +47,7 @@ class Grades(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey("student.id"), nullable=False)
     assignment_id = db.Column(db.Integer, db.ForeignKey("assignment.id"), nullable=False)
-    grade = db.Column(db.Float, nullable=False)
+    grade = db.Column(db.Float, nullable=True)
 
     student = db.relationship("Student", backref="grades_received")
     assignment = db.relationship("Assignment", backref="grades")
@@ -136,13 +136,23 @@ def index():  # define route
                 db.session.add(new_assignment)
                 db.session.commit()
 
-                # new_student_assignment = Student_Assignments (
-                #     student_id=assignment_student_id,
-                #     assignment_id=new_assignment.id,
-                #     status="Pending"
-                # )
-                # db.session.add(new_student_assignment)
-                # db.session.commit()
+                new_student_assignment = Student_Assignments (
+                    student_id=assignment_student_id,
+                    assignment_id=new_assignment.id,
+                    status="In Progress"
+                )
+                db.session.add(new_student_assignment)
+                db.session.commit()
+
+                new_grade = Grades (
+                    student_id=assignment_student_id,
+                    assignment_id=new_assignment.id,
+                    grade=-1
+                )
+
+                db.session.add(new_grade)
+                db.session.commit()
+
                 return redirect('/')
             except Exception as e:
                 return "Error adding assignment" + str(e)
@@ -150,7 +160,12 @@ def index():  # define route
         students = Student.query.order_by(Student.name).all()
         professors = Professor.query.order_by(Professor.name).all()
         assignments = Assignment.query.order_by(Assignment.due_date).all()
-        return render_template('index.html', assignments=assignments, professors=professors, students=students)
+        grades = Grades.query.all()
+        return render_template('index.html', 
+                               assignments=assignments, 
+                               professors=professors, 
+                               students=students,
+                               grades=grades)
 
 @app.route('/delete/student/<int:id>')
 def deleteStudent(id):
