@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Assignment Assigner</title>
+{% endblock %}
+
+{% block body %}
+
+<style>
+    .gradeInput {
+    border: 1px solid #000;
+    display: inline-block;
+    padding: 0 1px 2px;
+    }
+    .gradeInput > input {
+        border: 0;
+        margin: 0;
+        padding: 0;
+        outline:none;
+    }
+    .gradeInput::after { 
+        content: '%';
+    }
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+    }
+
+</style>
+<div class="content">
+    <h1>Add Grade for {{assignment.name}}</h1>
+    <h2>Assignment: {{student.name}}</h2>
+
+    <form action="/addGrade/{{assignment.id}}" method="POST">
+        <input type="hidden" name="action" value="addGrade">
+        <span class="gradeInput"><input min="0" max="100" required type="number" label name="gradeValue" id="gradeValue"></span>
+        <input type="submit" value="Add Grade">
+    </form>
+</div>
+
+{% endblock %}

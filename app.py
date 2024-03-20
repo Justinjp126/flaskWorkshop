@@ -167,6 +167,22 @@ def index():  # define route
                                students=students,
                                grades=grades)
 
+
+@app.route("/addGrade/<int:id>")
+def addGrade(id):
+    assignment = Assignment.query.get_or_404(id)
+    student = Student.query.get_or_404(assignment.student_id)
+    if request.method == 'POST':
+        
+        try:
+            db.session.commit()
+            return redirect('/')
+        except:
+            return "Error updating professor"
+    else:
+        return render_template('addGrade.html', assignment=assignment, student=student)
+
+
 @app.route('/delete/student/<int:id>')
 def deleteStudent(id):
     student = Student.query.get_or_404(id)

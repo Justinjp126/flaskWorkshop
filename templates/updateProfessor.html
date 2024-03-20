@@ -12,11 +12,11 @@
     <form action="/update/professor/{{professor.id}}" method="POST">
         <input type="hidden" name="action" value="addProfessor">
         <label for="professorName">Name: </label>
-        <input type="text" label name="professorName" id="professorName">
+        <input required type="text" label name="professorName" id="professorName">
         <label for="professorEmail">Email: </label>
-        <input type="text" label name="professorEmail" id="professorEmail">
+        <input required type="text" label name="professorEmail" id="professorEmail">
         <label for="professorDepartment">Department: </label>
-        <input type="text" label name="professorDepartment" id="professorDepartment">
+        <input required type="text" label name="professorDepartment" id="professorDepartment">
         <input type="submit" value="Update Professor">
     </form>
 </div>
