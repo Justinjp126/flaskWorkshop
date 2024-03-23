@@ -20,7 +20,7 @@
             <th>Due Date</th>
             <th>Professor</th>
             <th>Student</th>
-            <th>Status</th>
+            <th>Grade</th>
             <th>Actions</th>
         </tr>
         {% for assignment in assignments %}
@@ -31,17 +31,20 @@
             <td>{{ assignment.student.name }}</td>
             <td>
             {% for grade in grades %}
-                {% if grade.student_id == assignment.student.id
-                    and grade.assignment_id == assignment.id %}
-                    {% if grade.grade == -1 %}
-                        In Progress
-                    {% else %}
-                        {{ grade.grade }}
-                    {% endif %}
-                {% endif %}
-            {% endfor %}
+            {% if grade.student_id == assignment.student.id and grade.assignment_id == assignment.id %}
+            <span id="grade{{ grade.id }}">{{ grade.grade }}%</span>
             <br>
-            <a href="/addGrade/{{assignment.id}}">Add Grade</a>
+            <a href="/addGrade/{{grade.id}}">Update Grade</a>
+            <script>
+                // JavaScript code to replace grade with "In progress" if it's not found
+                var gradeElement = document.getElementById("grade{{ grade.id }}");
+                if (gradeElement.textContent == "-1.0%") {
+                    gradeElement.textContent = "In Progress"
+                }
+                
+            </script>
+            {% endif %}
+            {% endfor %}
             </td>
             <td style="display: flex; flex-direction: column;">
                 <a href="">Edit</a>

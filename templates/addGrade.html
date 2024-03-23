@@ -29,11 +29,12 @@
 
 </style>
 <div class="content">
-    <h1>Add Grade for {{assignment.name}}</h1>
-    <h2>Assignment: {{student.name}}</h2>
+    <h1>Update Grade</h1>
+    <h2>Assignment: #{{grade.id}}</h2>
 
-    <form action="/addGrade/{{assignment.id}}" method="POST">
+    <form action="/addGrade/{{grade.id}}" method="POST">
         <input type="hidden" name="action" value="addGrade">
+        <label for="gradeValue">Grade: </label>
         <span class="gradeInput"><input min="0" max="100" required type="number" label name="gradeValue" id="gradeValue"></span>
         <input type="submit" value="Add Grade">
     </form>

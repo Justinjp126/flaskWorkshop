@@ -141,13 +141,14 @@ def index():  # define route
                     assignment_id=new_assignment.id,
                     status="In Progress"
                 )
+
                 db.session.add(new_student_assignment)
                 db.session.commit()
 
                 new_grade = Grades (
                     student_id=assignment_student_id,
                     assignment_id=new_assignment.id,
-                    grade=-1
+                    grade="-1",
                 )
 
                 db.session.add(new_grade)
@@ -166,22 +167,6 @@ def index():  # define route
                                professors=professors, 
                                students=students,
                                grades=grades)
-
-
-@app.route("/addGrade/<int:id>")
-def addGrade(id):
-    assignment = Assignment.query.get_or_404(id)
-    student = Student.query.get_or_404(assignment.student_id)
-    if request.method == 'POST':
-        
-        try:
-            db.session.commit()
-            return redirect('/')
-        except:
-            return "Error updating professor"
-    else:
-        return render_template('addGrade.html', assignment=assignment, student=student)
-
 
 @app.route('/delete/student/<int:id>')
 def deleteStudent(id):
@@ -207,18 +192,35 @@ def deleteProfessor(id):
         return "error"
 
 
-@app.route('/update/professor/<int:id>', methods=['GET', 'POST'])
+@app.route("/addGrade/<int:id>",  methods=["GET", "POST"])
+def addGrade(id):
+    grade = Grades.query.get_or_404(id)
+
+    if request.method == "POST":
+        grade.grade = request.form["gradeValue"]
+
+        try:
+            db.session.add(grade)
+            db.session.commit()
+            return redirect("/")
+        except Exception as e:
+            return "Error adding grade" + str(e)
+    else:
+        return render_template("addGrade.html", grade=grade)
+
+
+@app.route("/update/professor/<int:id>", methods=["GET", "POST"])
 def updateProfessor(id):
     professor = Professor.query.get_or_404(id)
 
-    if request.method == 'POST':
+    if request.method == "POST":
         professor.name = request.form["professorName"]
         professor.email = request.form["professorEmail"]
         professor.department = request.form["professorDepartment"]
 
         try:
             db.session.commit()
-            return redirect('/')
+            return redirect("/")
         except:
             return "Error updating professor"
     else:
