@@ -47,8 +47,8 @@
             {% endfor %}
             </td>
             <td style="display: flex; flex-direction: column;">
-                <a href="">Edit</a>
-                <a href="">Delete</a>
+                <a href="/update/assignment/{{assignment.id}}">Update</a>
+                <a href="/delete/assignment/{{assignment.id}}">Delete</a>
             </td>
         </tr>
         {% endfor %}
@@ -94,9 +94,9 @@
             <td>{{ professor.email }}</td>
             <td>{{ professor.department }}</td>
             <td>
-                <a href="/delete/professor/{{professor.id}}">Delete</a>
-                <br>
                 <a href="/update/professor/{{professor.id}}">Update</a>
+                <br>
+                <a href="/delete/professor/{{professor.id}}">Delete</a>
             </td>
         </tr>
         {% endfor %}
@@ -133,9 +133,9 @@
             <td>{{ student.major }}</td>
             <td style="text-transform: capitalize;">{{ student.year }}</td>
             <td>
-                <a href="/delete/student/{{student.id}}">Delete</a>
-                <br>
                 <a href="/update/student/{{student.id}}">Update</a>
+                <br>
+                <a href="/delete/student/{{student.id}}">Delete</a>
             </td>
         </tr>
         {% endfor %}

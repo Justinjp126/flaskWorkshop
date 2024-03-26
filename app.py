@@ -209,6 +209,28 @@ def addGrade(id):
         return render_template("addGrade.html", grade=grade)
 
 
+@app.route("/update/assignment/<int:id>", methods=["GET", "POST"])
+def updateAssignment(id):
+    assignment = Assignment.query.get_or_404(id)
+    professors = Professor.query.all()
+    students = Student.query.all()
+
+    if request.method == "POST":
+        assignment.name = request.form["assignmentName"]
+        assignment.description = request.form["assignmentDescription"]
+        assignment.due_date = datetime.strptime(request.form["assignmentDueDate"], '%Y-%m-%d')
+        assignment.professor_id = request.form["assignmentProfessorId"]
+        assignment.student_id = request.form["assignmentStudentId"]
+
+        try:
+            db.session.commit()
+            return redirect("/")
+        except:
+            return "Error updating assignment"
+    else:
+        return render_template("updateAssignment.html", professors=professors, students=students, assignment=assignment)
+
+
 @app.route("/update/professor/<int:id>", methods=["GET", "POST"])
 def updateProfessor(id):
     professor = Professor.query.get_or_404(id)
