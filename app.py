@@ -173,11 +173,16 @@ def deleteStudent(id):
     student = Student.query.get_or_404(id)
 
     try:
+        # Cascade delete
+        Student_Assignments.query.filter_by(student_id=id).delete()
+        Assignment.query.filter_by(student_id=id).delete()
+        Grades.query.filter_by(student_id=id).delete()
+
         db.session.delete(student)
         db.session.commit()
         return redirect('/')
     except:
-        return "error"
+        return "Error deleting assignment"
 
 
 @app.route("/delete/professor/<int:id>")
@@ -185,11 +190,35 @@ def deleteProfessor(id):
     professor = Professor.query.get_or_404(id)
 
     try:
+        # Delete all professor instances in assignment table
+        Assignment.query.filter_by(professor_id=id).delete()
+
         db.session.delete(professor)
         db.session.commit()
         return redirect("/")
     except:
-        return "error"
+        return "Error deleting professor"
+
+
+@app.route("/delete/assignment/<int:id>")
+def deleteAssignment(id):
+    assignment = Assignment.query.get_or_404(id)
+
+    try:
+        # Cascade delete grade
+        grade_delete = Grades.query.filter_by(assignment_id=id).all()
+        for grade in grade_delete:
+            db.session.delete(grade)
+
+        student_assignment_delete = Student_Assignments.query.filter_by(assignment_id=id).all()
+        for student in student_assignment_delete:
+            db.session.delete(student)
+
+        db.session.delete(assignment)
+        db.session.commit()
+        return redirect("/")
+    except Exception as e:
+        return "Error deleting assingmetn" + str(e)
 
 
 @app.route("/addGrade/<int:id>",  methods=["GET", "POST"])
