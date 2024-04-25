@@ -19,6 +19,18 @@
 
         window.location.href = url;
     }
+    function redirectToProfessorReport() {
+        var professorId = document.getElementById("professorId").value;
+        var gradeFilter = document.getElementById("gradeFilterId").checked;
+
+        var url = "/report/professor/" + professorId;
+
+        if (gradeFilter) {
+            url += "?completedOnly=true"; // Appending query parameter for filter
+        }
+
+        window.location.href = url;
+    }
 </script>
 
 <div class="content">
@@ -41,7 +53,7 @@
                 <input type="submit" value="Generate Student Report">
             </span>
         </form>
-        <form action="/report/professor" method="GET">
+        <form action="/report/professor" method="GET" onsubmit="event.preventDefault(); redirectToProfessorReport();">
             <span class="reportSingle">
                 <label for="professorId">Select Professor:</label>
                 <select name="id" id="professorId" required>

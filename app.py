@@ -213,6 +213,27 @@ def report_student(id):
     )
 
 
+@app.route("/report/professor/<int:id>")
+def report_professor(id):
+    # Fetch the professor by ID
+    professor = Professor.query.get_or_404(id)
+
+    # Fetch all assignments for this professor
+    assignments = Assignment.query.filter_by(professor_id=id).all()
+
+    # If "completed only" is checked, filter assignments that are completed
+    completed_only = request.args.get("completedOnly") == "true"  # Get query parameter
+    if completed_only:
+        # Assuming assignments have a status field to indicate if they are completed
+        assignments = [
+            a for a in assignments if any(grade.grade != -1 for grade in a.grades)
+        ]
+
+    return render_template(
+        "reportProfessor.html", professor=professor, assignments=assignments
+    )
+
+
 @app.route("/delete/student/<int:id>")
 def deleteStudent(id):
     student = Student.query.get_or_404(id)
