@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Average Grades Report</title>
+{% endblock %}
+
+{% block body %}
+<div class="content">
+    <h1>Average Grades Report</h1>
+    <table>
+        <tr>
+            <th>Student</th>
+            <th>Average Grade</th>
+        </tr>
+        {% for student in avg_grades %}
+        <tr>
+            <td>{{ student.name }}</td>
+            <td>{{ "%.2f" | format(student.average_grade) }}%</td>
+            {% endfor %}
+    </table>
+</div>
+{% endblock %}

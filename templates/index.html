@@ -31,6 +31,10 @@
 
         window.location.href = url;
     }
+    function redirectGrade() {
+        var url = "/report/avgGrade/"
+        window.location.href = url
+    }
 </script>
 
 <div class="content">
@@ -67,6 +71,9 @@
                 </span>
                 <input type="submit" value="Generate Professor Report">
             </span>
+        </form>
+        <form action="/report/avgGrades/" method="GET" onsubmit="event.preventDefault(); redirectGrade();">
+            <input type="submit" value="Generate Grade Report">
         </form>
     </div>
 

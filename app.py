@@ -1,5 +1,6 @@
 from flask import Flask, redirect, render_template, url_for, request
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
 from datetime import datetime
 import os
 
@@ -232,6 +233,63 @@ def report_professor(id):
     return render_template(
         "reportProfessor.html", professor=professor, assignments=assignments
     )
+
+
+app.route("/report/student/<int:id>")
+
+
+def report_student(id):
+    student = Student.query.get_or_404(id)
+    completed_only = request.args.get("completedOnly") == "true"  # Get query parameter
+
+    if completed_only:
+        assignments = (
+            Assignment.query.filter_by(student_id=id)
+            .join(Grades)
+            .filter(Grades.grade >= 0)
+            .all()
+        )  # Only those with a valid grade
+    else:
+        assignments = Assignment.query.filter_by(student_id=id).all()
+
+    student_grades = Grades.query.filter_by(student_id=id).all()
+
+    # Create a dictionary to map assignment ID to its grade
+    assignment_grades = {grade.assignment_id: grade.grade for grade in student_grades}
+
+    return render_template(
+        "reportStudent.html",
+        student=student,
+        assignments=assignments,
+        assignment_grades=assignment_grades,
+    )
+
+
+@app.route("/report/avgGrade/", methods=["GET"])
+def reportAvgGrade():
+    with db.engine.connect() as conn:
+        stmt = text(
+            """
+        SELECT 
+            student.name, 
+            AVG(grades.grade) as average_grade
+        FROM 
+            student
+        JOIN 
+            grades 
+        ON 
+            student.id = grades.student_id
+        GROUP BY 
+            student.id
+        """
+        )
+
+        result = conn.execute(stmt.execution_options(result_set_keyed=True))
+        result_rows = result.fetchall()  # Get all rows from the result
+
+        avg_grades = [{"name": row[0], "average_grade": row[1]} for row in result_rows]
+
+    return render_template("reportAvgGrade.html", avg_grades=avg_grades)
 
 
 @app.route("/delete/student/<int:id>")
