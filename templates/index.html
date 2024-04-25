@@ -6,158 +6,205 @@
 
 {% block body %}
 
+<script>
+    function redirectToStudentReport() {
+        var studentId = document.getElementById("studentId").value;
+        var gradeFilter = document.getElementById("gradeFilterId").checked;
+
+        var url = "/report/student/" + studentId;
+
+        if (gradeFilter) {
+            url += "?completedOnly=true"; // Appending query parameter for filter
+        }
+
+        window.location.href = url;
+    }
+</script>
+
 <div class="content">
     <h1>Assignment Assigner</h1>
+    <h2>Generate Assignment Reports</h2>
+    <div class="report">
+        <form action="/report/student" method="GET" onsubmit="event.preventDefault(); redirectToStudentReport();">
+
+            <span class="reportSingle">
+                <label for="studentId">Select Student:</label>
+                <select name="id" id="studentId" required>
+                    {% for student in students %}
+                    <option value="{{ student.id }}">{{ student.name }}</option>
+                    {% endfor %}
+                </select>
+                <span>
+                    <label for="gradeFilterId">Completed Only</label>
+                    <input type="checkbox" id="gradeFilterId" name="gradeFilterId">
+                </span>
+                <input type="submit" value="Generate Student Report">
+            </span>
+        </form>
+        <form action="/report/professor" method="GET">
+            <span class="reportSingle">
+                <label for="professorId">Select Professor:</label>
+                <select name="id" id="professorId" required>
+                    {% for professor in professors %}
+                    <option value="{{ professor.id }}">{{ professor.name }}</option>
+                    {% endfor %}
+                </select>
+                <span>
+                    <label for="gradeFilterId">Completed Only</label>
+                    <input type="checkbox" id="gradeFilterId" name="gradeFilterId">
+                </span>
+                <input type="submit" value="Generate Professor Report">
+            </span>
+        </form>
+    </div>
+
     <h2>Assignments</h2>
 
-    {% if professors|length < 1 %}
-    <h4>No Assignments in database</h4>
-    
-    {% else %}  
-    <table>
-        <tr>
-            <th>Assignment</th>
-            <th>Due Date</th>
-            <th>Professor</th>
-            <th>Student</th>
-            <th>Grade</th>
-            <th>Actions</th>
-        </tr>
-        {% for assignment in assignments %}
-        <tr>
-            <td>{{ assignment.name }} - {{  assignment.description }}</td>
-            <td>{{ assignment.due_date.strftime('%Y-%m-%d') }}</td>
-            <td>{{ assignment.professor.name }}</td>
-            <td>{{ assignment.student.name }}</td>
-            <td>
-            {% for grade in grades %}
-            {% if grade.student_id == assignment.student.id and grade.assignment_id == assignment.id %}
-            <span id="grade{{ grade.id }}">{{ grade.grade }}%</span>
-            <br>
-            <a href="/addGrade/{{grade.id}}">Update Grade</a>
-            <script>
-                // JavaScript code to replace grade with "In progress" if it's not found
-                var gradeElement = document.getElementById("grade{{ grade.id }}");
-                if (gradeElement.textContent == "-1.0%") {
-                    gradeElement.textContent = "In Progress"
-                }
-                
-            </script>
-            {% endif %}
-            {% endfor %}
-            </td>
-            <td style="display: flex; flex-direction: column;">
-                <a href="/update/assignment/{{assignment.id}}">Update</a>
-                <a href="/delete/assignment/{{assignment.id}}">Delete</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% endif %}
-    <form action="/" method="POST">
-        <input type="hidden" name="action" value="addAssignment">
-        <label for="assignmentName">Name: </label>
-        <input required type="text" label name="assignmentName" id="assignmentName">
-        <label for="assignmentDescription">Description: </label>
-        <input required type="text" label name="assignmentDescription" id="assignmentDescription">
-        <label for="assignmentDueDate">Due Date: </label>
-        <input required type="date" label name="assignmentDueDate" id="assignmentDueDate">
-        <label for="assignmentProfessorId">Assigned By: </label>
-        <select name="assignmentProfessorId" id="assignmentProfessorId">
-            {% for professor in professors %}
-            <option value="{{professor.id}}">{{professor.name}}</option>
-            {% endfor %}
-        </select>
-        <label for="assignmentStudentId">Assigned To: </label>
-        <select name="assignmentStudentId" id="assignmentStudentId">
-            {% for student in students %}
-            <option value="{{student.id}}">{{student.name}}</option>
-            {% endfor %}
-        </select>
-        <input type="submit" value="Add Assignment">
-    </form>
-    <h2>Professors</h2>
-    {% if professors|length < 1 %} 
-    <h4>No professors in database</h4>
-    
-    {% else %}
-    <table>
-        <tr>
-            <th>Professor</th>
-            <th>Email</th>
-            <th>Department</th>
-            <th>Actions</th>
-        </tr>
-        {% for professor in professors %}
-        <tr>
-            <td>{{ professor.name }}</td>
-            <td>{{ professor.email }}</td>
-            <td>{{ professor.department }}</td>
-            <td>
-                <a href="/update/professor/{{professor.id}}">Update</a>
-                <br>
-                <a href="/delete/professor/{{professor.id}}">Delete</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% endif %}
-    <form action="/" method="POST">
-        <input type="hidden" name="action" value="addProfessor">
-        <label for="professorName">Name: </label>
-        <input required type="text" label name="professorName" id="professorName">
-        <label for="professorEmail">Email: </label>
-        <input required type="email" label name="professorEmail" id="professorEmail">
-        <label for="professorDepartment">Department: </label>
-        <input required type="text" label name="professorDepartment" id="professorDepartment">
-        <input type="submit" value="Add Professor">
-    </form>
+    {% if professors|length < 1 %} <h4>No Assignments in database</h4>
 
-    <h2>Students</h2>
-    {% if students|length < 1 %}
-    <h4>No students in database</h4>
-    
-    {% else %}
-    <table>
-        <tr>
-            <th>Student</th>
-            <th>Email</th>
-            <th>Major</th>
-            <th>Year</th>
-            <th>Actions</th>
-        </tr>
-        {% for student in students %}
-        <tr>
-            <td>{{ student.name }}</td>
-            <td>{{ student.email }}</td>
-            <td>{{ student.major }}</td>
-            <td style="text-transform: capitalize;">{{ student.year }}</td>
-            <td>
-                <a href="/update/student/{{student.id}}">Update</a>
-                <br>
-                <a href="/delete/student/{{student.id}}">Delete</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% endif %}
-    <form action="/" method="POST">
-        <input type="hidden" name="action" value="addStudent">
-        <label for="studentName">Name: </label>
-        <input required type="text" label name="studentName" id="studentName">
-        <label for="studentName">Email: </label>
-        <input required type="email" label name="studentEmail" id="studentEmail">
-        <label required for="studentName">Major: </label>
-        <input type="text" label name="studentMajor" id="studentMajor">
-        <label required for="studentYear">Year: </label>
-        <select name="studentYear" id="studentYear">
-            <option value="freshman">Freshman</option>
-            <option value="sophomore">Sophomore</option>
-            <option value="junior">Junior</option>
-            <option value="senior">Senior</option>
-        </select>
-        <input type="submit" value="Add Student">
-    </form>
+        {% else %}
+        <table>
+            <tr>
+                <th>Assignment</th>
+                <th>Due Date</th>
+                <th>Professor</th>
+                <th>Student</th>
+                <th>Grade</th>
+                <th>Actions</th>
+            </tr>
+            {% for assignment in assignments %}
+            <tr>
+                <td>{{ assignment.name }} - {{ assignment.description }}</td>
+                <td>{{ assignment.due_date.strftime('%Y-%m-%d') }}</td>
+                <td>{{ assignment.professor.name }}</td>
+                <td>{{ assignment.student.name }}</td>
+                <td>
+                    {% for grade in grades %}
+                    {% if grade.student_id == assignment.student.id and grade.assignment_id == assignment.id %}
+                    <span id="grade{{ grade.id }}">{{ grade.grade }}%</span>
+                    <br>
+                    <a href="/addGrade/{{grade.id}}">Update Grade</a>
+                    <script>
+                        // JavaScript code to replace grade with "In progress" if it's not found
+                        var gradeElement = document.getElementById("grade{{ grade.id }}");
+                        if (gradeElement.textContent == "-1.0%") {
+                            gradeElement.textContent = "In Progress"
+                        }
+
+                    </script>
+                    {% endif %}
+                    {% endfor %}
+                </td>
+                <td style="display: flex; flex-direction: column;">
+                    <a href="/update/assignment/{{assignment.id}}">Update</a>
+                    <a href="/delete/assignment/{{assignment.id}}">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+        <form action="/" method="POST">
+            <input type="hidden" name="action" value="addAssignment">
+            <label for="assignmentName">Name: </label>
+            <input required type="text" label name="assignmentName" id="assignmentName">
+            <label for="assignmentDescription">Description: </label>
+            <input required type="text" label name="assignmentDescription" id="assignmentDescription">
+            <label for="assignmentDueDate">Due Date: </label>
+            <input required type="date" label name="assignmentDueDate" id="assignmentDueDate">
+            <label for="assignmentProfessorId">Assigned By: </label>
+            <select name="assignmentProfessorId" id="assignmentProfessorId">
+                {% for professor in professors %}
+                <option value="{{professor.id}}">{{professor.name}}</option>
+                {% endfor %}
+            </select>
+            <label for="assignmentStudentId">Assigned To: </label>
+            <select name="assignmentStudentId" id="assignmentStudentId">
+                {% for student in students %}
+                <option value="{{student.id}}">{{student.name}}</option>
+                {% endfor %}
+            </select>
+            <input type="submit" value="Add Assignment">
+        </form>
+        <h2>Professors</h2>
+        {% if professors|length < 1 %} <h4>No professors in database</h4>
+
+            {% else %}
+            <table>
+                <tr>
+                    <th>Professor</th>
+                    <th>Email</th>
+                    <th>Department</th>
+                    <th>Actions</th>
+                </tr>
+                {% for professor in professors %}
+                <tr>
+                    <td>{{ professor.name }}</td>
+                    <td>{{ professor.email }}</td>
+                    <td>{{ professor.department }}</td>
+                    <td>
+                        <a href="/update/professor/{{professor.id}}">Update</a>
+                        <br>
+                        <a href="/delete/professor/{{professor.id}}">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+            {% endif %}
+            <form action="/" method="POST">
+                <input type="hidden" name="action" value="addProfessor">
+                <label for="professorName">Name: </label>
+                <input required type="text" label name="professorName" id="professorName">
+                <label for="professorEmail">Email: </label>
+                <input required type="email" label name="professorEmail" id="professorEmail">
+                <label for="professorDepartment">Department: </label>
+                <input required type="text" label name="professorDepartment" id="professorDepartment">
+                <input type="submit" value="Add Professor">
+            </form>
+
+            <h2>Students</h2>
+            {% if students|length < 1 %} <h4>No students in database</h4>
+
+                {% else %}
+                <table>
+                    <tr>
+                        <th>Student</th>
+                        <th>Email</th>
+                        <th>Major</th>
+                        <th>Year</th>
+                        <th>Actions</th>
+                    </tr>
+                    {% for student in students %}
+                    <tr>
+                        <td>{{ student.name }}</td>
+                        <td>{{ student.email }}</td>
+                        <td>{{ student.major }}</td>
+                        <td style="text-transform: capitalize;">{{ student.year }}</td>
+                        <td>
+                            <a href="/update/student/{{student.id}}">Update</a>
+                            <br>
+                            <a href="/delete/student/{{student.id}}">Delete</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+                {% endif %}
+                <form action="/" method="POST">
+                    <input type="hidden" name="action" value="addStudent">
+                    <label for="studentName">Name: </label>
+                    <input required type="text" label name="studentName" id="studentName">
+                    <label for="studentName">Email: </label>
+                    <input required type="email" label name="studentEmail" id="studentEmail">
+                    <label required for="studentName">Major: </label>
+                    <input type="text" label name="studentMajor" id="studentMajor">
+                    <label required for="studentYear">Year: </label>
+                    <select name="studentYear" id="studentYear">
+                        <option value="freshman">Freshman</option>
+                        <option value="sophomore">Sophomore</option>
+                        <option value="junior">Junior</option>
+                        <option value="senior">Senior</option>
+                    </select>
+                    <input type="submit" value="Add Student">
+                </form>
 </div>
 
 {% endblock %}

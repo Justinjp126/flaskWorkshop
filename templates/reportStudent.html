@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Assignment Assigner</title>
+{% endblock %}
+
+{% block body %}
+<div class="content">
+    <h1>Student Report: {{ student.name }}</h1>
+    <p>Email: {{ student.email }}</p>
+    <p>Major: {{ student.major }}</p>
+    <p>Year: {{ student.year }}</p>
+
+    <h2>Assignments</h2>
+    <table>
+        <tr>
+            <th>Assignment</th>
+            <th>Description</th>
+            <th>Due Date</th>
+            <th>Grade</th>
+        </tr>
+        {% for assignment in assignments %}
+        <tr>
+            <td>{{ assignment.name }}</td>
+            <td>{{ assignment.description }}</td>
+            <td>{{ assignment.due_date.strftime('%Y-%m-%d') }}</td>
+            <td>
+                {% if assignment_grades[assignment.id] is defined and assignment_grades[assignment.id] >= 0 %}
+                {{ assignment_grades[assignment.id] }}%
+                {% else %}
+                In Progress
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

@@ -6,8 +6,11 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(basedir, "assignment.db")
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(
+    basedir, "assignment.db"
+)
 db = SQLAlchemy(app)
+
 
 class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -15,6 +18,7 @@ class Student(db.Model):
     email = db.Column(db.String(100), unique=True, nullable=False)
     major = db.Column(db.String(100), nullable=True)
     year = db.Column(db.String(100), nullable=True)
+
     def __repr__(self):
         return "<Student %r>" % self.name
 
@@ -46,7 +50,9 @@ class Professor(db.Model):
 class Grades(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey("student.id"), nullable=False)
-    assignment_id = db.Column(db.Integer, db.ForeignKey("assignment.id"), nullable=False)
+    assignment_id = db.Column(
+        db.Integer, db.ForeignKey("assignment.id"), nullable=False
+    )
     grade = db.Column(db.Float, nullable=True)
 
     student = db.relationship("Student", backref="grades_received")
@@ -55,16 +61,24 @@ class Grades(db.Model):
     def __repr__(self):
         return f"<Grade id={self.id}, student_id={self.student_id}, assignment_id={self.assignment_id}, grade={self.grade}>"
 
+
 class Student_Assignments(db.Model):
-    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), primary_key=True)
-    assignment_id = db.Column(db.Integer, db.ForeignKey('assignment.id'), primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey("student.id"), primary_key=True)
+    assignment_id = db.Column(
+        db.Integer, db.ForeignKey("assignment.id"), primary_key=True
+    )
     status = db.Column(db.String(50), nullable=False)
 
-    student = db.relationship('Student', backref=db.backref('assigned_assignments', cascade='all,delete'))
-    assignment = db.relationship('Assignment', backref=db.backref('assigned_students', cascade='all,delete'))
+    student = db.relationship(
+        "Student", backref=db.backref("assigned_assignments", cascade="all,delete")
+    )
+    assignment = db.relationship(
+        "Assignment", backref=db.backref("assigned_students", cascade="all,delete")
+    )
 
     def __repr__(self):
         return f"<Student_Assignments student_id={self.student_id}, assignment_id={self.assignment_id}, status={self.status}>"
+
 
 class Todo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -76,11 +90,11 @@ class Todo(db.Model):
         return "<Task %r>" % self.id
 
 
-@app.route("/", methods=['POST', 'GET'])
+@app.route("/", methods=["POST", "GET"])
 def index():  # define route
-    if request.method == 'POST':
-        action = request.form.get('action')
-        if action == 'addStudent':
+    if request.method == "POST":
+        action = request.form.get("action")
+        if action == "addStudent":
             student_name = request.form["studentName"]
             student_email = request.form["studentEmail"]
             student_major = request.form["studentMajor"]
@@ -115,13 +129,13 @@ def index():  # define route
             except:
                 return "Error adding professor"
         elif action == "addAssignment":
-            assignment_name = request.form['assignmentName']
-            assignment_description = request.form['assignmentDescription']
+            assignment_name = request.form["assignmentName"]
+            assignment_description = request.form["assignmentDescription"]
             assignment_due_date_str = request.form["assignmentDueDate"]
-            assignment_professor_id = request.form['assignmentProfessorId']
-            assignment_student_id= request.form["assignmentStudentId"]
+            assignment_professor_id = request.form["assignmentProfessorId"]
+            assignment_student_id = request.form["assignmentStudentId"]
 
-            assignment_due_date = datetime.strptime(assignment_due_date_str, '%Y-%m-%d')
+            assignment_due_date = datetime.strptime(assignment_due_date_str, "%Y-%m-%d")
 
             # Create the assignment
             new_assignment = Assignment(
@@ -129,23 +143,23 @@ def index():  # define route
                 description=assignment_description,
                 due_date=assignment_due_date,
                 professor_id=assignment_professor_id,
-                student_id=assignment_student_id
+                student_id=assignment_student_id,
             )
 
             try:
                 db.session.add(new_assignment)
                 db.session.commit()
 
-                new_student_assignment = Student_Assignments (
+                new_student_assignment = Student_Assignments(
                     student_id=assignment_student_id,
                     assignment_id=new_assignment.id,
-                    status="In Progress"
+                    status="In Progress",
                 )
 
                 db.session.add(new_student_assignment)
                 db.session.commit()
 
-                new_grade = Grades (
+                new_grade = Grades(
                     student_id=assignment_student_id,
                     assignment_id=new_assignment.id,
                     grade="-1",
@@ -154,7 +168,7 @@ def index():  # define route
                 db.session.add(new_grade)
                 db.session.commit()
 
-                return redirect('/')
+                return redirect("/")
             except Exception as e:
                 return "Error adding assignment" + str(e)
     else:
@@ -162,13 +176,44 @@ def index():  # define route
         professors = Professor.query.order_by(Professor.name).all()
         assignments = Assignment.query.order_by(Assignment.due_date).all()
         grades = Grades.query.all()
-        return render_template('index.html', 
-                               assignments=assignments, 
-                               professors=professors, 
-                               students=students,
-                               grades=grades)
+        return render_template(
+            "index.html",
+            assignments=assignments,
+            professors=professors,
+            students=students,
+            grades=grades,
+        )
 
-@app.route('/delete/student/<int:id>')
+
+@app.route("/report/student/<int:id>")
+def report_student(id):
+    student = Student.query.get_or_404(id)
+    completed_only = request.args.get("completedOnly") == "true"  # Get query parameter
+
+    if completed_only:
+        assignments = (
+            Assignment.query.filter_by(student_id=id)
+            .join(Grades)
+            .filter(Grades.grade >= 0)
+            .all()
+        )  # Only those with a valid grade
+    else:
+        assignments = Assignment.query.filter_by(student_id=id).all()
+
+    student_grades = Grades.query.filter_by(student_id=id).all()
+
+    # Create a dictionary to map assignment ID to its grade
+    assignment_grades = {grade.assignment_id: grade.grade for grade in student_grades}
+
+    return render_template(
+        "reportStudent.html",
+        student=student,
+        assignments=assignments,
+        assignment_grades=assignment_grades,
+    )
+
+
+@app.route("/delete/student/<int:id>")
 def deleteStudent(id):
     student = Student.query.get_or_404(id)
 
@@ -180,7 +225,7 @@ def deleteStudent(id):
 
         db.session.delete(student)
         db.session.commit()
-        return redirect('/')
+        return redirect("/")
     except:
         return "Error deleting assignment"
 
@@ -210,7 +255,9 @@ def deleteAssignment(id):
         for grade in grade_delete:
             db.session.delete(grade)
 
-        student_assignment_delete = Student_Assignments.query.filter_by(assignment_id=id).all()
+        student_assignment_delete = Student_Assignments.query.filter_by(
+            assignment_id=id
+        ).all()
         for student in student_assignment_delete:
             db.session.delete(student)
 
@@ -221,7 +268,7 @@ def deleteAssignment(id):
         return "Error deleting assingmetn" + str(e)
 
 
-@app.route("/addGrade/<int:id>",  methods=["GET", "POST"])
+@app.route("/addGrade/<int:id>", methods=["GET", "POST"])
 def addGrade(id):
     grade = Grades.query.get_or_404(id)
 
@@ -247,7 +294,9 @@ def updateAssignment(id):
     if request.method == "POST":
         assignment.name = request.form["assignmentName"]
         assignment.description = request.form["assignmentDescription"]
-        assignment.due_date = datetime.strptime(request.form["assignmentDueDate"], '%Y-%m-%d')
+        assignment.due_date = datetime.strptime(
+            request.form["assignmentDueDate"], "%Y-%m-%d"
+        )
         assignment.professor_id = request.form["assignmentProfessorId"]
         assignment.student_id = request.form["assignmentStudentId"]
 
@@ -257,7 +306,12 @@ def updateAssignment(id):
         except:
             return "Error updating assignment"
     else:
-        return render_template("updateAssignment.html", professors=professors, students=students, assignment=assignment)
+        return render_template(
+            "updateAssignment.html",
+            professors=professors,
+            students=students,
+            assignment=assignment,
+        )
 
 
 @app.route("/update/professor/<int:id>", methods=["GET", "POST"])
@@ -275,7 +329,7 @@ def updateProfessor(id):
         except:
             return "Error updating professor"
     else:
-        return render_template('updateProfessor.html', professor=professor)
+        return render_template("updateProfessor.html", professor=professor)
 
 
 @app.route("/update/student/<int:id>", methods=["GET", "POST"])
