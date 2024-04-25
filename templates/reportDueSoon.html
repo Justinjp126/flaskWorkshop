@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Assignments Due Soon Report</title>
+{% endblock %}
+
+{% block body %}
+<div class="content">
+    <h1>Assignments Due Soon</h1>
+
+    <table>
+        <tr>
+            <th>Assignment Name</th>
+            <th>Description</th>
+            <th>Due Date</th>
+            <th>Student</th>
+        </tr>
+        {% for assignment in assignments_due_soon %}
+        <tr>
+            <td>{{ assignment.name }}</td>
+            <td>{{ assignment.description }}</td>
+            <td>{{ assignment.due_date.split(' ')[0] }}</td>
+            <td>{{ assignment.student_name }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

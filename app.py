@@ -1,7 +1,7 @@
 from flask import Flask, redirect, render_template, url_for, request
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -290,6 +290,43 @@ def reportAvgGrade():
         avg_grades = [{"name": row[0], "average_grade": row[1]} for row in result_rows]
 
     return render_template("reportAvgGrade.html", avg_grades=avg_grades)
+
+
+@app.route("/report/dueSoon/", methods=["GET"])
+def report_due_soon():
+    with db.engine.connect() as conn:
+        # Calculate the date one week from today
+        due_soon_date = datetime.now() + timedelta(days=7)
+
+        # Create a prepared SQL statement to fetch assignments due within the next 7 days
+        stmt = text(
+            """
+            SELECT
+                assignment.name,
+                assignment.description,
+                assignment.due_date,
+                student.name AS student_name
+            FROM
+                assignment
+            JOIN
+                student
+            ON
+                assignment.student_id = student.id
+            WHERE
+                assignment.due_date <= :due_soon_date
+            """
+        )
+
+        # Execute the SQL statement with a parameter
+        result = conn.execute(stmt, {"due_soon_date": due_soon_date})
+
+        # Retrieve the results as a list of dictionaries
+        assignments_due_soon = result.mappings().all()
+
+    # Render the report with the fetched data
+    return render_template(
+        "reportDueSoon.html", assignments_due_soon=assignments_due_soon
+    )
 
 
 @app.route("/delete/student/<int:id>")

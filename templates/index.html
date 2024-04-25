@@ -35,6 +35,11 @@
         var url = "/report/avgGrade/"
         window.location.href = url
     }
+
+    function redirectDueSoon() {
+        var url = "/report/dueSoon/"
+        window.location.href = url
+    }
 </script>
 
 <div class="content">
@@ -72,9 +77,14 @@
                 <input type="submit" value="Generate Professor Report">
             </span>
         </form>
-        <form action="/report/avgGrades/" method="GET" onsubmit="event.preventDefault(); redirectGrade();">
-            <input type="submit" value="Generate Grade Report">
-        </form>
+        <span class="reportSingle">
+            <form action="/report/avgGrades/" method="GET" onsubmit="event.preventDefault(); redirectGrade();">
+                <input type="submit" value="Generate Grade Report">
+            </form>
+            <form action="/report/dueSoon/" method="GET" onsubmit="event.preventDefault(); redirectDueSoon();">
+                <input type="submit" value="Generate Assignment Due Soon Report">
+            </form>
+        </span>
     </div>
 
     <h2>Assignments</h2>
