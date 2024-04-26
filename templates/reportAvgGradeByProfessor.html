@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="content">
+    <h1>Average Grades by Professor</h1>
+    <table>
+        <tr>
+            <th>Professor</th>
+            <th>Average Grade</th>
+        </tr>
+        {% for professor_grade in professor_grades %}
+        <tr>
+            <td>{{ professor_grade.professor_name }}</td>
+            <td>
+                {% if professor_grade.average_grade == -1 %}
+                No Assignments Graded
+                {% else %}
+                {{ professor_grade.average_grade | round(2) }}
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

@@ -329,6 +329,42 @@ def report_due_soon():
     )
 
 
+@app.route("/report/avgGradeByProfessor/", methods=["GET"])
+def report_avg_grade_by_professor():
+    with db.engine.connect() as conn:
+        # Prepare a SQL statement to calculate the average grade by professor
+        stmt = text(
+            """
+            SELECT
+                professor.name AS professor_name,
+                AVG(grades.grade) AS average_grade
+            FROM
+                professor
+            JOIN
+                assignment
+            ON
+                professor.id = assignment.professor_id
+            JOIN
+                grades
+            ON
+                assignment.id = grades.assignment_id
+            GROUP BY
+                professor.id
+            """
+        )
+
+        # Execute the SQL statement and get the results
+        result = conn.execute(stmt)
+
+        # Retrieve the results as a list of dictionaries for rendering
+        professor_grades = result.mappings().all()
+
+    # Render the report with the fetched data
+    return render_template(
+        "reportAvgGradeByProfessor.html", professor_grades=professor_grades
+    )
+
+
 @app.route("/delete/student/<int:id>")
 def deleteStudent(id):
     student = Student.query.get_or_404(id)
