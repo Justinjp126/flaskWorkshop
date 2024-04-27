@@ -1,6 +1,5 @@
-# FlaskIntroduction
+# 348 Final Project
 
-This repo has been updated to work with `Python v3.8` and up.
 
 ## How To Run
 
@@ -22,7 +21,7 @@ $ .\\env\Scripts\activate.bat
 $ python app.py
 ```
 
-### Indexes
+## Indexes
 
 student_id
 professor_id
@@ -37,12 +36,12 @@ from project import app, db
 app.app_context().push()
 db.create_all()
 
-### Concurrency
+## Concurrency
 
 SERIALIZABLE - Locks sets of objects (tables, pages, index ranges)
 No phantom data; Most accurate, but slowest (least concurrency); Same as 2PL
 
-### Lessons
+## Lessons
 
 Overall, this project taught me the basics of Flask and mySQLAlchemy. I can
 now make a CRUD project using these technologies. If I had the chance to
