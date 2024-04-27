@@ -216,47 +216,145 @@ def report_student(id):
 
 @app.route("/report/professor/<int:id>")
 def report_professor(id):
-    # Fetch the professor by ID
-    professor = Professor.query.get_or_404(id)
+    with db.engine.connect() as conn:
+        # Fetch the professor by ID
+        professor_stmt = text("SELECT * FROM professor WHERE id = :professor_id")
+        professor_result = conn.execute(professor_stmt, {"professor_id": id})
+        professor = professor_result.mappings().one()  # Fetch as dictionary
 
-    # Fetch all assignments for this professor
-    assignments = Assignment.query.filter_by(professor_id=id).all()
+        # Fetch all assignments for the professor
+        assignments_stmt = text(
+            """
+            SELECT 
+                assignment.id,
+                assignment.name,
+                assignment.description,
+                assignment.due_date
+            FROM 
+                assignment
+            WHERE 
+                assignment.professor_id = :professor_id
+            """
+        )
+        assignments_result = conn.execute(assignments_stmt, {"professor_id": id})
+        assignments = (
+            assignments_result.mappings().all()
+        )  # Fetch all assignments as dictionaries
 
-    # If "completed only" is checked, filter assignments that are completed
-    completed_only = request.args.get("completedOnly") == "true"  # Get query parameter
-    if completed_only:
-        # Assuming assignments have a status field to indicate if they are completed
-        assignments = [
-            a for a in assignments if any(grade.grade != -1 for grade in a.grades)
-        ]
+        # Determine if "completed only" filter is checked
+        completed_only = request.args.get("completedOnly") == "true"
+        if completed_only:
+            # Fetch grades for these assignments
+            grades_stmt = text(
+                """
+                SELECT 
+                    assignment_id, 
+                    grade
+                FROM 
+                    grades
+                WHERE 
+                    assignment_id IN (
+                        SELECT id FROM assignment WHERE professor_id = :professor_id
+                    )
+                """
+            )
+            grades_result = conn.execute(grades_stmt, {"professor_id": id})
+            grades = {
+                g["assignment_id"]: g["grade"] for g in grades_result.mappings().all()
+            }
 
+            # Filter assignments based on completed grades
+            assignments = [a for a in assignments if grades.get(a["id"], -1) >= 0]
+
+    # Render the report
     return render_template(
         "reportProfessor.html", professor=professor, assignments=assignments
     )
+
+
+# def report_professor(id):
+#     # Fetch the professor by ID
+#     professor = Professor.query.get_or_404(id)
+
+#     # Fetch all assignments for this professor
+#     assignments = Assignment.query.filter_by(professor_id=id).all()
+
+#     # If "completed only" is checked, filter assignments that are completed
+#     completed_only = request.args.get("completedOnly") == "true"  # Get query parameter
+#     if completed_only:
+#         # Assuming assignments have a status field to indicate if they are completed
+#         assignments = [
+#             a for a in assignments if any(grade.grade != -1 for grade in a.grades)
+#         ]
+
+#     return render_template(
+#         "reportProfessor.html", professor=professor, assignments=assignments
+#     )
 
 
 app.route("/report/student/<int:id>")
 
 
 def report_student(id):
-    student = Student.query.get_or_404(id)
-    completed_only = request.args.get("completedOnly") == "true"  # Get query parameter
+    with db.engine.connect() as conn:
+        # Get the "completed only" filter from the request
+        completed_only = request.args.get("completedOnly") == "true"
 
-    if completed_only:
+        # Base SQL query to fetch student details
+        student_stmt = text("SELECT * FROM student WHERE id = :student_id")
+
+        # Fetch student details
+        student_result = conn.execute(student_stmt, {"student_id": id})
+        student = student_result.mappings().one()  # Get a single result as a dictionary
+
+        # Construct SQL statement based on the completed_only filter
+        if completed_only:
+            assignment_stmt = text(
+                """
+                SELECT 
+                    assignment.id, 
+                    assignment.name, 
+                    assignment.description, 
+                    assignment.due_date,
+                    grades.grade
+                FROM 
+                    assignment
+                JOIN 
+                    grades 
+                ON 
+                    assignment.id = grades.assignment_id
+                WHERE 
+                    assignment.student_id = :student_id
+                    AND grades.grade >= 0
+                """
+            )
+        else:
+            assignment_stmt = text(
+                """
+                SELECT 
+                    assignment.id, 
+                    assignment.name, 
+                    assignment.description,
+                    assignment.due_date
+                FROM 
+                    assignment
+                WHERE 
+                    assignment.student_id = :student_id
+                """
+            )
+
+        # Fetch the assignments and related grades
+        assignments_result = conn.execute(assignment_stmt, {"student_id": id})
         assignments = (
-            Assignment.query.filter_by(student_id=id)
-            .join(Grades)
-            .filter(Grades.grade >= 0)
-            .all()
-        )  # Only those with a valid grade
-    else:
-        assignments = Assignment.query.filter_by(student_id=id).all()
+            assignments_result.mappings().all()
+        )  # Get all assignments as dictionaries
 
-    student_grades = Grades.query.filter_by(student_id=id).all()
+        # Map assignment IDs to their grades
+        assignment_grades = {
+            assignment["id"]: assignment.get("grade", -1) for assignment in assignments
+        }
 
-    # Create a dictionary to map assignment ID to its grade
-    assignment_grades = {grade.assignment_id: grade.grade for grade in student_grades}
-
+    # Render the template with the retrieved data
     return render_template(
         "reportStudent.html",
         student=student,
