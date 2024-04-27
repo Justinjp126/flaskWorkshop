@@ -377,6 +377,8 @@ def reportAvgGrade():
             grades 
         ON 
             student.id = grades.student_id
+        WHERE 
+            grades.grade >= 0
         GROUP BY 
             student.id
         """
@@ -446,6 +448,8 @@ def report_avg_grade_by_professor():
                 grades
             ON
                 assignment.id = grades.assignment_id
+            WHERE 
+                grades.grade >= 0
             GROUP BY
                 professor.id
             """
