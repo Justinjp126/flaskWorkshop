@@ -36,3 +36,8 @@ Database can use the index to find the matching rows in the assignment table wit
 from project import app, db
 app.app_context().push()
 db.create_all()
+
+### Concurrency
+
+SERIALIZABLE - Locks sets of objects (tables, pages, index ranges)
+No phantom data; Most accurate, but slowest (least concurrency); Same as 2PL
