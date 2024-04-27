@@ -41,3 +41,14 @@ db.create_all()
 
 SERIALIZABLE - Locks sets of objects (tables, pages, index ranges)
 No phantom data; Most accurate, but slowest (least concurrency); Same as 2PL
+
+### Lessons
+
+Overall, this project taught me the basics of Flask and mySQLAlchemy. I can
+now make a CRUD project using these technologies. If I had the chance to
+start this project again, I would ensure I designed my project with the
+requirements in mind first. I had to go back and change my ORM to prepared
+statements, which was an overall unnecessary time drain. I would also try to
+spend more time learning the basics of Flask first before starting, to avoid
+spending time on what ended up basic issues that I spent a lot of time
+debugging.
