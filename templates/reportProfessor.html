@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block head %}
-<title>Professor Report</title>
+<title>Assignment Assigner - Professor Report</title>
 {% endblock %}
 
 {% block body %}
@@ -10,10 +10,11 @@
     <p>Email: {{ professor.email }}</p>
     <p>Department: {{ professor.department }}</p>
 
-    <h2>{{ professor.name }}'s Assignments</h2>
+    <h2>Assignments</h2>
     <table>
         <tr>
             <th>Assignment Name</th>
+            <th>Student</th>
             <th>Description</th>
             <th>Due Date</th>
             <th>Grade</th>
@@ -21,17 +22,12 @@
         {% for assignment in assignments %}
         <tr>
             <td>{{ assignment.name }}</td>
+            <td>{{ assignment.student.name }}</td>
             <td>{{ assignment.description }}</td>
+            <td>{{ assignment.due_date.strftime('%Y-%m-%d') }}</td>
             <td>
-                {% if 'due_date' in assignment %}
-                {{ assignment.due_date.split(' ')[0] }} {# Extract date before the time part #}
-                {% else %}
-                Not Specified
-                {% endif %}
-            </td>
-            <td>
-                {% if assignment.get('grade', -1) < 0 %} In Progress {% else %} {{ assignment.grade | round(2) }}% {} {%
-                    endif %} </td>
+                {% if assignment.grades[0].grade is not defined or assignment.grades[0].grade < 0 %} In Progress {% else
+                    %} {{ assignment.grades[0].grade }}% {% endif %} </td>
         </tr>
         {% endfor %}
     </table>

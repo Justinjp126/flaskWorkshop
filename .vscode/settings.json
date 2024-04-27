@@ -1,5 +1,3 @@
 {
-    "cSpell.words": [
-        "SQLALCHEMY"
-    ]
+  "cSpell.words": ["backref", "SQLALCHEMY", "virtualenv"]
 }

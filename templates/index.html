@@ -229,7 +229,8 @@
                                 <a href="/delete/student/{{student.id}}">Delete</a>
                             </td>
                         </tr>
-                        {% endfor %}
+                        {% endfor %}completed_only = request.args.get("completedOnly") == "true" # Get query parameter
+
                     </table>
                     {% endif %}
                     <form action="/" method="POST">

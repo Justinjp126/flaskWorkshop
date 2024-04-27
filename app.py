@@ -216,80 +216,22 @@ def report_student(id):
 
 @app.route("/report/professor/<int:id>")
 def report_professor(id):
-    with db.engine.connect() as conn:
-        # Fetch the professor by ID
-        professor_stmt = text("SELECT * FROM professor WHERE id = :professor_id")
-        professor_result = conn.execute(professor_stmt, {"professor_id": id})
-        professor = professor_result.mappings().one()  # Fetch as dictionary
+    professor = Professor.query.get_or_404(id)
 
-        # Fetch all assignments for the professor
-        assignments_stmt = text(
-            """
-            SELECT 
-                assignment.id,
-                assignment.name,
-                assignment.description,
-                assignment.due_date
-            FROM 
-                assignment
-            WHERE 
-                assignment.professor_id = :professor_id
-            """
-        )
-        assignments_result = conn.execute(assignments_stmt, {"professor_id": id})
-        assignments = (
-            assignments_result.mappings().all()
-        )  # Fetch all assignments as dictionaries
+    # Fetch all assignments for this professor
+    assignments = Assignment.query.filter_by(professor_id=id).all()
 
-        # Determine if "completed only" filter is checked
-        completed_only = request.args.get("completedOnly") == "true"
-        if completed_only:
-            # Fetch grades for these assignments
-            grades_stmt = text(
-                """
-                SELECT 
-                    assignment_id, 
-                    grade
-                FROM 
-                    grades
-                WHERE 
-                    assignment_id IN (
-                        SELECT id FROM assignment WHERE professor_id = :professor_id
-                    )
-                """
-            )
-            grades_result = conn.execute(grades_stmt, {"professor_id": id})
-            grades = {
-                g["assignment_id"]: g["grade"] for g in grades_result.mappings().all()
-            }
+    # If "completed only" is checked, filter assignments that are completed
+    completed_only = request.args.get("completedOnly") == "true"  # Get query parameter
+    if completed_only:
+        # Assuming assignments have a status field to indicate if they are completed
+        assignments = [
+            a for a in assignments if any(grade.grade != -1 for grade in a.grades)
+        ]
 
-            # Filter assignments based on completed grades
-            assignments = [a for a in assignments if grades.get(a["id"], -1) >= 0]
-
-    # Render the report
     return render_template(
         "reportProfessor.html", professor=professor, assignments=assignments
     )
-
-
-# def report_professor(id):
-#     # Fetch the professor by ID
-#     professor = Professor.query.get_or_404(id)
-
-#     # Fetch all assignments for this professor
-#     assignments = Assignment.query.filter_by(professor_id=id).all()
-
-#     # If "completed only" is checked, filter assignments that are completed
-#     completed_only = request.args.get("completedOnly") == "true"  # Get query parameter
-#     if completed_only:
-#         # Assuming assignments have a status field to indicate if they are completed
-#         assignments = [
-#             a for a in assignments if any(grade.grade != -1 for grade in a.grades)
-#         ]
-
-#     return render_template(
-#         "reportProfessor.html", professor=professor, assignments=assignments
-#     )
 
 
 app.route("/report/student/<int:id>")
@@ -519,7 +461,7 @@ def deleteAssignment(id):
         db.session.commit()
         return redirect("/")
     except Exception as e:
-        return "Error deleting assingmetn" + str(e)
+        return "Error deleting assignment" + str(e)
 
 
 @app.route("/addGrade/<int:id>", methods=["GET", "POST"])
